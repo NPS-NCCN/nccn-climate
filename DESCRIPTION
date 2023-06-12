@@ -12,4 +12,9 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
 Imports: 
-    lubridate
+    fetchaquarius (>= 0.0.0.9000),
+    lubridate,
+    purrr
+Remotes: 
+    https://github.com/nationalparkservice/imd-fetchaquarius
+URL: https://nationalparkservice.github.io/nccn-climate/

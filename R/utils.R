@@ -1,4 +1,5 @@
 #' @importFrom magrittr %>% %<>%
+
 #' @importFrom fetchaquarius connectToAquarius
 #' @export
 fetchaquarius::connectToAquarius
