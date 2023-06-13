@@ -155,6 +155,10 @@ getParkClimateData <- function(park_code = c("MORA", "NOCA", "OLYM", "SAJH"), pa
     ts_info <- dplyr::filter(ts_info, tolower(Label) %in% tolower(labels))
   }
 
+  if (nrow(ts_info) == 0) {
+    stop("No data found for the park, parameter, and labels that you requested.")
+  }
+
   all_ts_data <- list()
   for (i in 1:nrow(ts_info)) {
     loc_id <- ts_info$LocationIdentifier[i]
@@ -264,28 +268,118 @@ summarizeParkClimateData <- function(park_code = c("MORA", "NOCA", "OLYM", "SAJH
   return(summarized_data)
 }
 
-exportNCCNDailySummaries <- function(park_code = c("MORA", "NOCA", "OLYM", "SAJH"), water_year, file_out, overwrite = FALSE) {
-  avg_air_temp <- summarizeParkClimateData(park_code = park_code,
+#' Export daily average precip and air temp
+#'
+#' @inheritParams summarizeParkClimateData
+#' @param file_out Path (including filename) of the .xlsx spreadsheet you want to create. Defaults to a file named with the park code and water year in the current working directory.
+#' @param overwrite If `file_out` already exists, do you want to overwrite it? Defaults to `FALSE`.
+#'
+#' @return Writes data to `file_out` and returns a list containing the data that was written.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' exportNCCNDailySummaries("OLYM", 2022, "exports/OLYM_Daily_2022.xlsx")
+#' }
+exportNCCNDailySummaries <- function(park_code = c("MORA", "NOCA", "OLYM", "SAJH"), water_year, file_out = paste0("./", park_code, "_", water_year, "_daily.xlsx"), overwrite = FALSE) {
+  avg_air_temp <- try(summarizeParkClimateData(park_code = park_code,
                                         parameter = "Air Temp",
-                                        label = "Avg",
+                                        label = c("Avg", "NWAC-CSV", "ATC", "Current"),
                                         water_year = water_year,
                                         summary = "mean",
                                         summary_period = "day",
                                         period_of_record = FALSE) %>%
-    c_to_f()
+    c_to_f())
 
-  max_air_temp <- summarizeParkClimateData(park_code = park_code,
+  max_air_temp <- try(summarizeParkClimateData(park_code = park_code,
                                            parameter = "Air Temp",
-                                           label = "Avg",
+                                           label = c("Avg", "NWAC-CSV", "ATC", "Current"),
                                            water_year = water_year,
                                            summary = "max",
                                            summary_period = "day",
                                            period_of_record = FALSE) %>%
+    c_to_f())
+
+  min_air_temp <- try(summarizeParkClimateData(park_code = park_code,
+                                           parameter = "Air Temp",
+                                           label = c("Avg", "NWAC-CSV", "ATC", "Current"),
+                                           water_year = water_year,
+                                           summary = "min",
+                                           summary_period = "day",
+                                           period_of_record = FALSE) %>%
+    c_to_f())
+
+  total_precip <- try(summarizeParkClimateData(park_code = park_code,
+                                           parameter = "Precip Increm",
+                                           label = c("Rainfall", "Total Hourly", "RNIN", "NWAC-CSV"),
+                                           water_year = water_year,
+                                           summary = "sum",
+                                           summary_period = "day",
+                                           period_of_record = FALSE) %>%
+    mm_to_in())
+
+  sheets <- list(AirTemp_Average_F = avg_air_temp,
+                 Temperature_Max_Average_F = max_air_temp,
+                 Temparature_Min_Average_F = min_air_temp,
+                 Precipitation_Total_Inches = total_precip)
+
+  raw_data_metadata <- purrr::map(sheets, ~ attr(.x, "metadata")) %>%
+    purrr::reduce(rbind)
+
+  sheets[["Raw_Data_Metadata"]] <- raw_data_metadata
+
+  openxlsx::write.xlsx(sheets, file_out, overwrite = overwrite)
+
+  return(sheets)
+}
+
+c_to_f <- function(df) {
+  df <- dplyr::mutate(df, dplyr::across(dplyr::ends_with("_degC"), ~ . * 9/5 + 32))
+  names(df) <- stringr::str_replace(names(df), "_deg[C|F]", "")
+  return(df)
+}
+
+mm_to_in <- function(df) {
+  df <- dplyr::mutate(df, dplyr::across(dplyr::ends_with("_mm"), ~ . / 25.4))
+  names(df) <- stringr::str_replace(names(df), "(mm)|(in)", "")
+  return(df)
+}
+
+#' Export monthly average precip and air temp
+#'
+#' @inheritParams summarizeParkClimateData
+#' @param file_out Path (including filename) of the .xlsx spreadsheet you want to create. Defaults to a file named with the park code and water year in the current working directory.
+#' @param overwrite If `file_out` already exists, do you want to overwrite it? Defaults to `FALSE`.
+#'
+#' @return Writes data to `file_out` and returns a list containing the data that was written.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' exportNCCNDailySummaries("OLYM", 2022, "exports/OLYM_Daily_2022.xlsx")
+#' }
+exportNCCNMonthlySummaries <- function(park_code = c("MORA", "NOCA", "OLYM", "SAJH"), water_year, file_out = paste0("./", park_code, "_", water_year, "_monthly.xlsx"), overwrite = FALSE) {
+  avg_air_temp <- summarizeParkClimateData(park_code = park_code,
+                                           parameter = "Air Temp",
+                                           label = c("Avg", "NWAC-CSV", "ATC", "Current"),
+                                           water_year = water_year,
+                                           summary = "mean",
+                                           summary_period = "month",
+                                           period_of_record = FALSE) %>%
     c_to_f()
 
-  min_air_temp <- summarizeParkClimateData(park_code = park_code,
+  avg_max_air_temp <- summarizeParkClimateData(park_code = park_code,
                                            parameter = "Air Temp",
-                                           label = "Avg",
+                                           label = c("Avg", "NWAC-CSV", "ATC", "Current"),
+                                           water_year = water_year,
+                                           summary = "max",
+                                           summary_period = "month",
+                                           period_of_record = FALSE) %>%
+    c_to_f()
+
+  avg_min_air_temp <- summarizeParkClimateData(park_code = park_code,
+                                           parameter = "Air Temp",
+                                           label = c("Avg", "NWAC-CSV", "ATC", "Current"),
                                            water_year = water_year,
                                            summary = "min",
                                            summary_period = "day",
@@ -294,7 +388,7 @@ exportNCCNDailySummaries <- function(park_code = c("MORA", "NOCA", "OLYM", "SAJH
 
   total_precip <- summarizeParkClimateData(park_code = park_code,
                                            parameter = "Precip Increm",
-                                           label = "Rainfall",
+                                           label = c("Rainfall", "Total Hourly", "RNIN", "NWAC-CSV"),
                                            water_year = water_year,
                                            summary = "sum",
                                            summary_period = "day",
