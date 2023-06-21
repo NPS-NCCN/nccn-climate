@@ -268,7 +268,7 @@ summarizeParkClimateData <- function(park_code = c("MORA", "NOCA", "OLYM", "SAJH
   return(summarized_data)
 }
 
-#' Export daily average precip and air temp
+#' Export daily precip and air temp summaries
 #'
 #' @inheritParams summarizeParkClimateData
 #' @param file_out Path (including filename) of the .xlsx spreadsheet you want to create. Defaults to a file named with the park code and water year in the current working directory.
@@ -282,41 +282,62 @@ summarizeParkClimateData <- function(park_code = c("MORA", "NOCA", "OLYM", "SAJH
 #' exportNCCNDailySummaries("OLYM", 2022, "exports/OLYM_Daily_2022.xlsx")
 #' }
 exportNCCNDailySummaries <- function(park_code = c("MORA", "NOCA", "OLYM", "SAJH"), water_year, file_out = paste0("./", park_code, "_", water_year, "_daily.xlsx"), overwrite = FALSE) {
-  avg_air_temp <- try(summarizeParkClimateData(park_code = park_code,
-                                        parameter = "Air Temp",
-                                        label = c("Avg", "NWAC-CSV", "ATC", "Current"),
-                                        water_year = water_year,
-                                        summary = "mean",
-                                        summary_period = "day",
-                                        period_of_record = FALSE) %>%
-    c_to_f())
+  park_code <- rlang::arg_match(park_code)
+  if (missing(water_year)) {
+    stop("Water year is required")
+  }
 
-  max_air_temp <- try(summarizeParkClimateData(park_code = park_code,
-                                           parameter = "Air Temp",
-                                           label = c("Avg", "NWAC-CSV", "ATC", "Current"),
-                                           water_year = water_year,
-                                           summary = "max",
-                                           summary_period = "day",
-                                           period_of_record = FALSE) %>%
-    c_to_f())
+  avg_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
+                                                    parameter = "Air Temp",
+                                                    label = c("Avg", "NWAC-CSV", "ATC", "Current"),
+                                                    water_year = water_year,
+                                                    summary = "mean",
+                                                    summary_period = "day",
+                                                    period_of_record = FALSE) %>%
+                             c_to_f(),
+                           error = function(e) {
+                             warning(e)
+                             return(tibble::tibble())
+                           })
 
-  min_air_temp <- try(summarizeParkClimateData(park_code = park_code,
-                                           parameter = "Air Temp",
-                                           label = c("Avg", "NWAC-CSV", "ATC", "Current"),
-                                           water_year = water_year,
-                                           summary = "min",
-                                           summary_period = "day",
-                                           period_of_record = FALSE) %>%
-    c_to_f())
+  max_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
+                                                    parameter = "Air Temp",
+                                                    label = c("Avg", "NWAC-CSV", "ATC", "Current"),
+                                                    water_year = water_year,
+                                                    summary = "max",
+                                                    summary_period = "day",
+                                                    period_of_record = FALSE) %>%
+                             c_to_f(),
+                           error = function(e) {
+                             warning(e)
+                             return(tibble::tibble())
+                           })
 
-  total_precip <- try(summarizeParkClimateData(park_code = park_code,
-                                           parameter = "Precip Increm",
-                                           label = c("Rainfall", "Total Hourly", "RNIN", "NWAC-CSV"),
-                                           water_year = water_year,
-                                           summary = "sum",
-                                           summary_period = "day",
-                                           period_of_record = FALSE) %>%
-    mm_to_in())
+  min_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
+                                                    parameter = "Air Temp",
+                                                    label = c("Avg", "NWAC-CSV", "ATC", "Current"),
+                                                    water_year = water_year,
+                                                    summary = "min",
+                                                    summary_period = "day",
+                                                    period_of_record = FALSE) %>%
+                             c_to_f(),
+                           error = function(e) {
+                             warning(e)
+                             return(tibble::tibble())
+                           })
+
+  total_precip <- tryCatch(summarizeParkClimateData(park_code = park_code,
+                                                    parameter = "Precip Increm",
+                                                    label = c("Rainfall", "Total Hourly", "RNIN", "NWAC-CSV"),
+                                                    water_year = water_year,
+                                                    summary = "sum",
+                                                    summary_period = "day",
+                                                    period_of_record = FALSE) %>%
+                             mm_to_in(),
+                           error = function(e) {
+                             warning(e)
+                             return(tibble::tibble())
+                           })
 
   sheets <- list(AirTemp_Average_F = avg_air_temp,
                  Temperature_Max_Average_F = max_air_temp,
@@ -345,7 +366,7 @@ mm_to_in <- function(df) {
   return(df)
 }
 
-#' Export monthly average precip and air temp
+#' Export monthly precip and air temp summaries
 #'
 #' @inheritParams summarizeParkClimateData
 #' @param file_out Path (including filename) of the .xlsx spreadsheet you want to create. Defaults to a file named with the park code and water year in the current working directory.
@@ -359,46 +380,319 @@ mm_to_in <- function(df) {
 #' exportNCCNDailySummaries("OLYM", 2022, "exports/OLYM_Daily_2022.xlsx")
 #' }
 exportNCCNMonthlySummaries <- function(park_code = c("MORA", "NOCA", "OLYM", "SAJH"), water_year, file_out = paste0("./", park_code, "_", water_year, "_monthly.xlsx"), overwrite = FALSE) {
-  avg_air_temp <- summarizeParkClimateData(park_code = park_code,
-                                           parameter = "Air Temp",
-                                           label = c("Avg", "NWAC-CSV", "ATC", "Current"),
-                                           water_year = water_year,
-                                           summary = "mean",
-                                           summary_period = "month",
-                                           period_of_record = FALSE) %>%
-    c_to_f()
+  park_code <- rlang::arg_match(park_code)
+  if (missing(water_year)) {
+    stop("Water year is required")
+  }
 
-  avg_max_air_temp <- summarizeParkClimateData(park_code = park_code,
-                                           parameter = "Air Temp",
-                                           label = c("Avg", "NWAC-CSV", "ATC", "Current"),
-                                           water_year = water_year,
-                                           summary = "max",
-                                           summary_period = "month",
-                                           period_of_record = FALSE) %>%
-    c_to_f()
+  avg_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
+                                                    parameter = "Air Temp",
+                                                    label = c("Avg", "NWAC-CSV", "ATC", "Current"),
+                                                    water_year = water_year,
+                                                    summary = "mean",
+                                                    summary_period = "month",
+                                                    period_of_record = FALSE) %>%
+                             c_to_f(),
+                           error = function(e) {
+                             warning(e)
+                             return(tibble::tibble())
+                           })
 
-  avg_min_air_temp <- summarizeParkClimateData(park_code = park_code,
-                                           parameter = "Air Temp",
-                                           label = c("Avg", "NWAC-CSV", "ATC", "Current"),
-                                           water_year = water_year,
-                                           summary = "min",
-                                           summary_period = "day",
-                                           period_of_record = FALSE) %>%
-    c_to_f()
+  avg_max_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
+                                                        parameter = "Air Temp",
+                                                        label = c("Avg", "NWAC-CSV", "ATC", "Current"),
+                                                        water_year = water_year,
+                                                        summary = "max",
+                                                        summary_period = "day",
+                                                        period_of_record = FALSE) %>%
+                                 c_to_f() %>%
+                                 dplyr::mutate(Year = lubridate::year(Date),
+                                                            Month = lubridate::month(Date, label = TRUE, abbr = FALSE)) %>%
+                                 dplyr::select(-Day, -Date) %>%
+                                 dplyr::group_by(Year, Month) %>%
+                                 dplyr::summarise(dplyr::across(dplyr::everything(), ~ mean(., na.rm = TRUE))) %>%
+                                 dplyr::ungroup(),
+                               error = function(e) {
+                                 warning(e)
+                                 return(tibble::tibble())
+                               })
 
-  total_precip <- summarizeParkClimateData(park_code = park_code,
-                                           parameter = "Precip Increm",
-                                           label = c("Rainfall", "Total Hourly", "RNIN", "NWAC-CSV"),
-                                           water_year = water_year,
-                                           summary = "sum",
-                                           summary_period = "day",
-                                           period_of_record = FALSE) %>%
-    mm_to_in()
+  avg_min_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
+                                                        parameter = "Air Temp",
+                                                        label = c("Avg", "NWAC-CSV", "ATC", "Current"),
+                                                        water_year = water_year,
+                                                        summary = "min",
+                                                        summary_period = "day",
+                                                        period_of_record = FALSE) %>%
+                                 c_to_f() %>%
+                                 dplyr::mutate(Year = lubridate::year(Date),
+                                               Month = lubridate::month(Date, label = TRUE, abbr = FALSE)) %>%
+                                 dplyr::select(-Day, -Date) %>%
+                                 dplyr::group_by(Year, Month) %>%
+                                 dplyr::summarise(dplyr::across(dplyr::everything(), ~ mean(., na.rm = TRUE))) %>%
+                                 dplyr::ungroup(),
+                               error = function(e) {
+                                 warning(e)
+                                 return(tibble::tibble())
+                               })
+
+  max_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
+                                                    parameter = "Air Temp",
+                                                    label = c("Avg", "NWAC-CSV", "ATC", "Current"),
+                                                    water_year = water_year,
+                                                    summary = "max",
+                                                    summary_period = "month",
+                                                    period_of_record = FALSE) %>%
+                             c_to_f(),
+                           error = function(e) {
+                             warning(e)
+                             return(tibble::tibble())
+                           })
+
+  min_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
+                                                    parameter = "Air Temp",
+                                                    label = c("Avg", "NWAC-CSV", "ATC", "Current"),
+                                                    water_year = water_year,
+                                                    summary = "min",
+                                                    summary_period = "month",
+                                                    period_of_record = FALSE) %>%
+                             c_to_f(),
+                           error = function(e) {
+                             warning(e)
+                             return(tibble::tibble())
+                           })
+
+  total_precip <- tryCatch(summarizeParkClimateData(park_code = park_code,
+                                                    parameter = "Precip Increm",
+                                                    label = c("Rainfall", "Total Hourly", "RNIN", "NWAC-CSV"),
+                                                    water_year = water_year,
+                                                    summary = "sum",
+                                                    summary_period = "month",
+                                                    period_of_record = FALSE) %>%
+                             mm_to_in(),
+                           error = function(e) {
+                             warning(e)
+                             return(tibble::tibble())
+                           })
+
+  sheets <- list(AirTemp_Average_F = avg_air_temp,
+                 Temperature_Max_Average_F = avg_max_air_temp,
+                 Temparature_Min_Average_F = avg_min_air_temp,
+                 Temperature_Max_F = max_air_temp,
+                 Temperature_Min_F = min_air_temp,
+                 Precipitation_Total_Inches = total_precip)
+
+  raw_data_metadata <- purrr::map(sheets, ~ attr(.x, "metadata")) %>%
+    purrr::reduce(rbind)
+
+  sheets[["Raw_Data_Metadata"]] <- raw_data_metadata
+
+  openxlsx::write.xlsx(sheets, file_out, overwrite = overwrite)
+
+  return(sheets)
+}
+
+#' Export daily period of record summaries for precip and air temp
+#'
+#' @inheritParams summarizeParkClimateData
+#' @param file_out Path (including filename) of the .xlsx spreadsheet you want to create. Defaults to a file named with the park code and water year in the current working directory.
+#' @param overwrite If `file_out` already exists, do you want to overwrite it? Defaults to `FALSE`.
+#'
+#' @return Writes data to `file_out` and returns a list containing the data that was written.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' exportNCCNDailyPeriodOfRecord("OLYM", 2022, "exports/OLYM_Daily_2022.xlsx")
+#' }
+exportNCCNDailyPeriodOfRecord <- function(park_code = c("MORA", "NOCA", "OLYM", "SAJH"), file_out = paste(park_code, "daily_periodofrecord.xlsx", sep = "_"), overwrite = FALSE) {
+  park_code <- rlang::arg_match(park_code)
+
+  avg_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
+                                                    parameter = "Air Temp",
+                                                    label = c("Avg", "NWAC-CSV", "ATC", "Current"),
+                                                    summary = "mean",
+                                                    summary_period = "day",
+                                                    period_of_record = TRUE) %>%
+                             c_to_f(),
+                           error = function(e) {
+                             warning(e)
+                             return(tibble::tibble())
+                           })
+
+  max_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
+                                                        parameter = "Air Temp",
+                                                        label = c("Avg", "NWAC-CSV", "ATC", "Current"),
+                                                        summary = "max",
+                                                        summary_period = "day",
+                                                        period_of_record = TRUE) %>%
+                                 c_to_f(),
+                               error = function(e) {
+                                 warning(e)
+                                 return(tibble::tibble())
+                               })
+
+  min_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
+                                                        parameter = "Air Temp",
+                                                        label = c("Avg", "NWAC-CSV", "ATC", "Current"),
+                                                        summary = "min",
+                                                        summary_period = "day",
+                                                        period_of_record = TRUE) %>%
+                                 c_to_f(),
+                               error = function(e) {
+                                 warning(e)
+                                 return(tibble::tibble())
+                               })
+
+  total_precip <- tryCatch(summarizeParkClimateData(park_code = park_code,
+                                                    parameter = "Precip Increm",
+                                                    label = c("Rainfall", "Total Hourly", "RNIN", "NWAC-CSV"),
+                                                    summary = "sum",
+                                                    summary_period = "day",
+                                                    period_of_record = FALSE) %>%
+                             mm_to_in(),
+                           error = function(e) {
+                             warning(e)
+                             return(tibble::tibble())
+                           })
+
+  avg_total_precip <- total_precip %>%
+    dplyr::select(-Date) %>%
+    dplyr::group_by(Day) %>%
+    dplyr::summarise(dplyr::across(dplyr::everything(), ~ mean(., na.rm = TRUE))) %>%
+    dplyr::ungroup()
+
+  max_total_precip <- total_precip %>%
+    dplyr::select(-Date) %>%
+    dplyr::group_by(Day) %>%
+    dplyr::summarise(dplyr::across(dplyr::everything(), ~ max(., na.rm = TRUE))) %>%
+    dplyr::ungroup()
 
   sheets <- list(AirTemp_Average_F = avg_air_temp,
                  Temperature_Max_Average_F = max_air_temp,
                  Temparature_Min_Average_F = min_air_temp,
-                 Precipitation_Total_Inches = total_precip)
+                 Precipitation_Avg_Total_Inches = avg_total_precip,
+                 Precip_Max_Total_Inches = avg_total_precip
+  )
+
+  raw_data_metadata <- purrr::map(sheets, ~ attr(.x, "metadata")) %>%
+    purrr::reduce(rbind)
+
+  sheets[["Raw_Data_Metadata"]] <- raw_data_metadata
+
+  openxlsx::write.xlsx(sheets, file_out, overwrite = overwrite)
+
+  return(sheets)
+}
+
+#' Export monthly period of record summaries for precip and air temp
+#'
+#' @inheritParams summarizeParkClimateData
+#' @param file_out Path (including filename) of the .xlsx spreadsheet you want to create. Defaults to a file named with the park code and water year in the current working directory.
+#' @param overwrite If `file_out` already exists, do you want to overwrite it? Defaults to `FALSE`.
+#'
+#' @return Writes data to `file_out` and returns a list containing the data that was written.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' exportNCCNMonthlyPeriodOfRecord("OLYM", 2022, "exports/OLYM_Daily_2022.xlsx")
+#' }
+exportNCCNMonthlyPeriodOfRecord <- function(park_code = c("MORA", "NOCA", "OLYM", "SAJH"), file_out = paste(park_code, "monthly_periodofrecord.xlsx", sep = "_"), overwrite = FALSE) {
+  park_code <- rlang::arg_match(park_code)
+
+  avg_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
+                                                    parameter = "Air Temp",
+                                                    label = c("Avg", "NWAC-CSV", "ATC", "Current"),
+                                                    summary = "mean",
+                                                    summary_period = "month",
+                                                    period_of_record = TRUE) %>%
+                             c_to_f(),
+                           error = function(e) {
+                             warning(e)
+                             return(tibble::tibble())
+                           })
+
+  avg_max_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
+                                                        parameter = "Air Temp",
+                                                        label = c("Avg", "NWAC-CSV", "ATC", "Current"),
+                                                        summary = "max",
+                                                        summary_period = "day",
+                                                        period_of_record = FALSE) %>%
+                                 c_to_f() %>%
+                                 dplyr::mutate(Month = lubridate::month(Date, label = TRUE, abbr = FALSE)) %>%
+                                 dplyr::select(-Day, -Date) %>%
+                                 dplyr::group_by(Month) %>%
+                                 dplyr::summarise(dplyr::across(dplyr::everything(), ~ mean(., na.rm = TRUE))) %>%
+                                 dplyr::ungroup(),
+                               error = function(e) {
+                                 warning(e)
+                                 return(tibble::tibble())
+                               })
+
+  avg_min_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
+                                                        parameter = "Air Temp",
+                                                        label = c("Avg", "NWAC-CSV", "ATC", "Current"),
+                                                        summary = "min",
+                                                        summary_period = "day",
+                                                        period_of_record = FALSE) %>%
+                                 c_to_f() %>%
+                                 dplyr::mutate(Month = lubridate::month(Date, label = TRUE, abbr = FALSE)) %>%
+                                 dplyr::select(-Day, -Date) %>%
+                                 dplyr::group_by(Month) %>%
+                                 dplyr::summarise(dplyr::across(dplyr::everything(), ~ mean(., na.rm = TRUE))) %>%
+                                 dplyr::ungroup(),
+                               error = function(e) {
+                                 warning(e)
+                                 return(tibble::tibble())
+                               })
+
+  total_precip <- tryCatch(summarizeParkClimateData(park_code = park_code,
+                                                    parameter = "Precip Increm",
+                                                    label = c("Rainfall", "Total Hourly", "RNIN", "NWAC-CSV"),
+                                                    summary = "sum",
+                                                    summary_period = "month",
+                                                    period_of_record = FALSE) %>%
+                             mm_to_in() %>%
+                             dplyr::select(-Year) %>%
+                             dplyr::group_by(Month) %>%
+                             dplyr::summarise(dplyr::across(dplyr::everything(), ~ mean(., na.rm = TRUE))) %>%
+                             dplyr::ungroup(),
+                           error = function(e) {
+                             warning(e)
+                             return(tibble::tibble())
+                           })
+  max_precip <- tryCatch(summarizeParkClimateData(park_code = park_code,
+                                                    parameter = "Precip Increm",
+                                                    label = c("Rainfall", "Total Hourly", "RNIN", "NWAC-CSV"),
+                                                    summary = "max",
+                                                    summary_period = "month",
+                                                    period_of_record = TRUE) %>%
+                             mm_to_in(),
+                           error = function(e) {
+                             warning(e)
+                             return(tibble::tibble())
+                           })
+
+  min_precip <- tryCatch(summarizeParkClimateData(park_code = park_code,
+                                                    parameter = "Precip Increm",
+                                                    label = c("Rainfall", "Total Hourly", "RNIN", "NWAC-CSV"),
+                                                    summary = "min",
+                                                    summary_period = "month",
+                                                    period_of_record = TRUE) %>%
+                             mm_to_in(),
+                           error = function(e) {
+                             warning(e)
+                             return(tibble::tibble())
+                           })
+
+  sheets <- list(AirTemp_Average_F = avg_air_temp,
+                 Temperature_Max_Average_F = avg_max_air_temp,
+                 Temparature_Min_Average_F = avg_min_air_temp,
+                 Precipitation_Total_Avg_Inches = total_precip,
+                 Precip_Max_Inches = max_precip,
+                 Precip_Min_Inches = min_precip
+                 )
 
   raw_data_metadata <- purrr::map(sheets, ~ attr(.x, "metadata")) %>%
     purrr::reduce(rbind)
