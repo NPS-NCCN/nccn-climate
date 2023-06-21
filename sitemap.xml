@@ -10,6 +10,18 @@
     <loc>https://nationalparkservice.github.io/nccn-climate/index.html</loc>
   </url>
   <url>
+    <loc>https://nationalparkservice.github.io/nccn-climate/reference/exportNCCNDailyPeriodOfRecord.html</loc>
+  </url>
+  <url>
+    <loc>https://nationalparkservice.github.io/nccn-climate/reference/exportNCCNDailySummaries.html</loc>
+  </url>
+  <url>
+    <loc>https://nationalparkservice.github.io/nccn-climate/reference/exportNCCNMonthlyPeriodOfRecord.html</loc>
+  </url>
+  <url>
+    <loc>https://nationalparkservice.github.io/nccn-climate/reference/exportNCCNMonthlySummaries.html</loc>
+  </url>
+  <url>
     <loc>https://nationalparkservice.github.io/nccn-climate/reference/getClimateParams.html</loc>
   </url>
   <url>
