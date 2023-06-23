@@ -4,6 +4,10 @@
 #' @export
 fetchaquarius::connectToAquarius
 
+#' @importFrom fetchaquarius disconnectFromAquarius
+#' @export
+fetchaquarius::disconnectFromAquarius
+
 #' Get Water Year
 #'
 #' Computes the water year that a date falls in, where the water year runs from
@@ -251,7 +255,7 @@ summarizeParkClimateData <- function(park_code = c("MORA", "NOCA", "OLYM", "SAJH
     df <- df %>%
       dplyr::select(-timestamp) %>%
       dplyr::group_by(dplyr::pick(grp_by)) %>%
-      dplyr::summarize(dplyr::across(param_col, summary_fun)) %>%
+      dplyr::summarize(dplyr::across(param_col, summary_fun, .names = "{.col}")) %>%
       dplyr::ungroup()
 
     return(df)
@@ -287,6 +291,7 @@ exportNCCNDailySummaries <- function(park_code = c("MORA", "NOCA", "OLYM", "SAJH
     stop("Water year is required")
   }
 
+  # Mean of hourly temperatures, broken down by day, month, and year
   avg_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
                                                     parameter = "Air Temp",
                                                     label = c("Avg", "NWAC-CSV", "ATC", "Current"),
@@ -300,6 +305,7 @@ exportNCCNDailySummaries <- function(park_code = c("MORA", "NOCA", "OLYM", "SAJH
                              return(tibble::tibble())
                            })
 
+  # Maximum of hourly temperatures, broken down by day, month, and year
   max_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
                                                     parameter = "Air Temp",
                                                     label = c("Avg", "NWAC-CSV", "ATC", "Current"),
@@ -313,6 +319,7 @@ exportNCCNDailySummaries <- function(park_code = c("MORA", "NOCA", "OLYM", "SAJH
                              return(tibble::tibble())
                            })
 
+  # Minimum of hourly temperatures, broken down by day, month, and year
   min_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
                                                     parameter = "Air Temp",
                                                     label = c("Avg", "NWAC-CSV", "ATC", "Current"),
@@ -326,6 +333,7 @@ exportNCCNDailySummaries <- function(park_code = c("MORA", "NOCA", "OLYM", "SAJH
                              return(tibble::tibble())
                            })
 
+  # Sum of hourly precipitation, broken down by day, month, and year
   total_precip <- tryCatch(summarizeParkClimateData(park_code = park_code,
                                                     parameter = "Precip Increm",
                                                     label = c("Rainfall", "Total Hourly", "RNIN", "NWAC-CSV"),
@@ -347,23 +355,19 @@ exportNCCNDailySummaries <- function(park_code = c("MORA", "NOCA", "OLYM", "SAJH
   raw_data_metadata <- purrr::map(sheets, ~ attr(.x, "metadata")) %>%
     purrr::reduce(rbind)
 
+  calcs <- tibble::tibble(sheet = names(sheets),
+                          calculation = c("Mean of hourly temperatures, broken down by day, month, and year",
+                                          "Maximum of hourly temperatures, broken down by day, month, and year",
+                                          "Minimum of hourly temperatures, broken down by day, month, and year",
+                                          "Sum of hourly precipitation, broken down by day, month, and year"
+                          ))
+
+  sheets[["Calculations"]] <- calcs
   sheets[["Raw_Data_Metadata"]] <- raw_data_metadata
 
   openxlsx::write.xlsx(sheets, file_out, overwrite = overwrite)
 
   return(sheets)
-}
-
-c_to_f <- function(df) {
-  df <- dplyr::mutate(df, dplyr::across(dplyr::ends_with("_degC"), ~ . * 9/5 + 32))
-  names(df) <- stringr::str_replace(names(df), "_deg[C|F]", "")
-  return(df)
-}
-
-mm_to_in <- function(df) {
-  df <- dplyr::mutate(df, dplyr::across(dplyr::ends_with("_mm"), ~ . / 25.4))
-  names(df) <- stringr::str_replace(names(df), "(mm)|(in)", "")
-  return(df)
 }
 
 #' Export monthly precip and air temp summaries
@@ -385,6 +389,7 @@ exportNCCNMonthlySummaries <- function(park_code = c("MORA", "NOCA", "OLYM", "SA
     stop("Water year is required")
   }
 
+  # Average of all hourly temperatures, broken down by month and year
   avg_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
                                                     parameter = "Air Temp",
                                                     label = c("Avg", "NWAC-CSV", "ATC", "Current"),
@@ -397,7 +402,7 @@ exportNCCNMonthlySummaries <- function(park_code = c("MORA", "NOCA", "OLYM", "SA
                              warning(e)
                              return(tibble::tibble())
                            })
-
+  # Average of all daily maximum temperatures, broken down by month and year
   avg_max_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
                                                         parameter = "Air Temp",
                                                         label = c("Avg", "NWAC-CSV", "ATC", "Current"),
@@ -417,6 +422,7 @@ exportNCCNMonthlySummaries <- function(park_code = c("MORA", "NOCA", "OLYM", "SA
                                  return(tibble::tibble())
                                })
 
+  # Average of all daily minimum temperatures, broken down by month and year
   avg_min_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
                                                         parameter = "Air Temp",
                                                         label = c("Avg", "NWAC-CSV", "ATC", "Current"),
@@ -436,6 +442,7 @@ exportNCCNMonthlySummaries <- function(park_code = c("MORA", "NOCA", "OLYM", "SA
                                  return(tibble::tibble())
                                })
 
+  # Maximum hourly temperature, broken down by month and year
   max_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
                                                     parameter = "Air Temp",
                                                     label = c("Avg", "NWAC-CSV", "ATC", "Current"),
@@ -449,6 +456,7 @@ exportNCCNMonthlySummaries <- function(park_code = c("MORA", "NOCA", "OLYM", "SA
                              return(tibble::tibble())
                            })
 
+  # Maximum hourly temperature, broken down by month and year
   min_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
                                                     parameter = "Air Temp",
                                                     label = c("Avg", "NWAC-CSV", "ATC", "Current"),
@@ -462,6 +470,7 @@ exportNCCNMonthlySummaries <- function(park_code = c("MORA", "NOCA", "OLYM", "SA
                              return(tibble::tibble())
                            })
 
+  # Sum of hourly precipitation, broken down by month and year
   total_precip <- tryCatch(summarizeParkClimateData(park_code = park_code,
                                                     parameter = "Precip Increm",
                                                     label = c("Rainfall", "Total Hourly", "RNIN", "NWAC-CSV"),
@@ -485,6 +494,16 @@ exportNCCNMonthlySummaries <- function(park_code = c("MORA", "NOCA", "OLYM", "SA
   raw_data_metadata <- purrr::map(sheets, ~ attr(.x, "metadata")) %>%
     purrr::reduce(rbind)
 
+  calcs <- tibble::tibble(sheet = names(sheets),
+                          calculation = c("Average of all hourly temperatures, broken down by month and year",
+                                          "Average of all daily maximum temperatures, broken down by month and year",
+                                          "Average of all daily minimum temperatures, broken down by month and year",
+                                          "Maximum hourly temperature, broken down by month and year",
+                                          "Maximum hourly temperature, broken down by month and year",
+                                          "Sum of hourly precipitation, broken down by month and year"
+                          ))
+
+  sheets[["Calculations"]] <- calcs
   sheets[["Raw_Data_Metadata"]] <- raw_data_metadata
 
   openxlsx::write.xlsx(sheets, file_out, overwrite = overwrite)
@@ -508,6 +527,7 @@ exportNCCNMonthlySummaries <- function(park_code = c("MORA", "NOCA", "OLYM", "SA
 exportNCCNDailyPeriodOfRecord <- function(park_code = c("MORA", "NOCA", "OLYM", "SAJH"), file_out = paste(park_code, "daily_periodofrecord.xlsx", sep = "_"), overwrite = FALSE) {
   park_code <- rlang::arg_match(park_code)
 
+  # average of all hourly temperatures across years, broken down by day of year (1-365)
   avg_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
                                                     parameter = "Air Temp",
                                                     label = c("Avg", "NWAC-CSV", "ATC", "Current"),
@@ -520,6 +540,7 @@ exportNCCNDailyPeriodOfRecord <- function(park_code = c("MORA", "NOCA", "OLYM", 
                              return(tibble::tibble())
                            })
 
+  # Maximum of hourly temperatures, across years, broken down by day of year
   max_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
                                                         parameter = "Air Temp",
                                                         label = c("Avg", "NWAC-CSV", "ATC", "Current"),
@@ -531,7 +552,7 @@ exportNCCNDailyPeriodOfRecord <- function(park_code = c("MORA", "NOCA", "OLYM", 
                                  warning(e)
                                  return(tibble::tibble())
                                })
-
+  # Minimum of hourly temperatures, across years, broken down by day of year
   min_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
                                                         parameter = "Air Temp",
                                                         label = c("Avg", "NWAC-CSV", "ATC", "Current"),
@@ -556,17 +577,25 @@ exportNCCNDailyPeriodOfRecord <- function(park_code = c("MORA", "NOCA", "OLYM", 
                              return(tibble::tibble())
                            })
 
-  avg_total_precip <- total_precip %>%
-    dplyr::select(-Date) %>%
-    dplyr::group_by(Day) %>%
-    dplyr::summarise(dplyr::across(dplyr::everything(), ~ mean(., na.rm = TRUE))) %>%
-    dplyr::ungroup()
+  if (nrow(total_precip) > 0) {
+    # Mean of daily total precip, across all years, broken down by day of year
+    avg_total_precip <- total_precip %>%
+      dplyr::select(-Date) %>%
+      dplyr::group_by(Day) %>%
+      dplyr::summarise(dplyr::across(dplyr::everything(), ~ mean(., na.rm = TRUE))) %>%
+      dplyr::ungroup()
 
-  max_total_precip <- total_precip %>%
-    dplyr::select(-Date) %>%
-    dplyr::group_by(Day) %>%
-    dplyr::summarise(dplyr::across(dplyr::everything(), ~ max(., na.rm = TRUE))) %>%
-    dplyr::ungroup()
+    # Max of daily total precip, across all years, broken down by day of year
+    max_total_precip <- total_precip %>%
+      dplyr::select(-Date) %>%
+      dplyr::group_by(Day) %>%
+      dplyr::summarise(dplyr::across(dplyr::everything(), ~ max(., na.rm = TRUE))) %>%
+      dplyr::ungroup()
+  } else {
+    avg_total_precip <- tibble::tibble()
+    max_total_precip <- tibble::tibble()
+  }
+
 
   sheets <- list(AirTemp_Average_F = avg_air_temp,
                  Temperature_Max_Average_F = max_air_temp,
@@ -577,7 +606,15 @@ exportNCCNDailyPeriodOfRecord <- function(park_code = c("MORA", "NOCA", "OLYM", 
 
   raw_data_metadata <- purrr::map(sheets, ~ attr(.x, "metadata")) %>%
     purrr::reduce(rbind)
+  calcs <- tibble::tibble(sheet = names(sheets),
+                          calculation = c("Average of all hourly temperatures across years, broken down by day of year (1-365)",
+                                          "Maximum of hourly temperatures, across years, broken down by day of year",
+                                          "Minimum of hourly temperatures, across years, broken down by day of year",
+                                          "Mean of daily total precip, across all years, broken down by day of year",
+                                          "Max of daily total precip, across all years, broken down by day of year"
+                          ))
 
+  sheets[["Calculations"]] <- calcs
   sheets[["Raw_Data_Metadata"]] <- raw_data_metadata
 
   openxlsx::write.xlsx(sheets, file_out, overwrite = overwrite)
@@ -601,6 +638,7 @@ exportNCCNDailyPeriodOfRecord <- function(park_code = c("MORA", "NOCA", "OLYM", 
 exportNCCNMonthlyPeriodOfRecord <- function(park_code = c("MORA", "NOCA", "OLYM", "SAJH"), file_out = paste(park_code, "monthly_periodofrecord.xlsx", sep = "_"), overwrite = FALSE) {
   park_code <- rlang::arg_match(park_code)
 
+  # Mean hourly air temp, across all years, broken down by month
   avg_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
                                                     parameter = "Air Temp",
                                                     label = c("Avg", "NWAC-CSV", "ATC", "Current"),
@@ -613,6 +651,7 @@ exportNCCNMonthlyPeriodOfRecord <- function(park_code = c("MORA", "NOCA", "OLYM"
                              return(tibble::tibble())
                            })
 
+  # Average of daily maximum temperatures, across all years, broken down by month
   avg_max_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
                                                         parameter = "Air Temp",
                                                         label = c("Avg", "NWAC-CSV", "ATC", "Current"),
@@ -630,6 +669,7 @@ exportNCCNMonthlyPeriodOfRecord <- function(park_code = c("MORA", "NOCA", "OLYM"
                                  return(tibble::tibble())
                                })
 
+  # Average of daily minimum temperatures, across all years, broken down by month
   avg_min_air_temp <- tryCatch(summarizeParkClimateData(park_code = park_code,
                                                         parameter = "Air Temp",
                                                         label = c("Avg", "NWAC-CSV", "ATC", "Current"),
@@ -646,7 +686,7 @@ exportNCCNMonthlyPeriodOfRecord <- function(park_code = c("MORA", "NOCA", "OLYM"
                                  warning(e)
                                  return(tibble::tibble())
                                })
-
+  # Average of total monthly precipitation across all years, broken down by month
   total_precip <- tryCatch(summarizeParkClimateData(park_code = park_code,
                                                     parameter = "Precip Increm",
                                                     label = c("Rainfall", "Total Hourly", "RNIN", "NWAC-CSV"),
@@ -662,25 +702,36 @@ exportNCCNMonthlyPeriodOfRecord <- function(park_code = c("MORA", "NOCA", "OLYM"
                              warning(e)
                              return(tibble::tibble())
                            })
+
+  # Maximum of total monthly precipitation across all years, broken down by month
   max_precip <- tryCatch(summarizeParkClimateData(park_code = park_code,
                                                     parameter = "Precip Increm",
                                                     label = c("Rainfall", "Total Hourly", "RNIN", "NWAC-CSV"),
-                                                    summary = "max",
+                                                    summary = "sum",
                                                     summary_period = "month",
-                                                    period_of_record = TRUE) %>%
-                             mm_to_in(),
+                                                    period_of_record = FALSE) %>%
+                             mm_to_in() %>%
+                           dplyr::select(-Year) %>%
+                           dplyr::group_by(Month) %>%
+                           dplyr::summarise(dplyr::across(dplyr::everything(), ~ max(., na.rm = TRUE))) %>%
+                           dplyr::ungroup(),
                            error = function(e) {
                              warning(e)
                              return(tibble::tibble())
                            })
 
+  # Maximum of total monthly precipitation across all years, broken down by month
   min_precip <- tryCatch(summarizeParkClimateData(park_code = park_code,
                                                     parameter = "Precip Increm",
                                                     label = c("Rainfall", "Total Hourly", "RNIN", "NWAC-CSV"),
-                                                    summary = "min",
+                                                    summary = "sum",
                                                     summary_period = "month",
-                                                    period_of_record = TRUE) %>%
-                             mm_to_in(),
+                                                    period_of_record = FALSE) %>%
+                             mm_to_in() %>%
+                           dplyr::select(-Year) %>%
+                           dplyr::group_by(Month) %>%
+                           dplyr::summarise(dplyr::across(dplyr::everything(), ~ min(., na.rm = TRUE))) %>%
+                           dplyr::ungroup(),
                            error = function(e) {
                              warning(e)
                              return(tibble::tibble())
@@ -696,9 +747,17 @@ exportNCCNMonthlyPeriodOfRecord <- function(park_code = c("MORA", "NOCA", "OLYM"
 
   raw_data_metadata <- purrr::map(sheets, ~ attr(.x, "metadata")) %>%
     purrr::reduce(rbind)
+  calcs <- tibble::tibble(sheet = names(sheets),
+                         calculation = c("Mean hourly air temp, across all years, broken down by month",
+                                         "Average of daily maximum temperatures, across all years, broken down by month",
+                                         "Average of daily minimum temperatures, across all years, broken down by month",
+                                         "Average of total monthly precipitation across all years, broken down by month",
+                                         "Maximum of total monthly precipitation across all years, broken down by month",
+                                         "Maximum of total monthly precipitation across all years, broken down by month"
+                         ))
 
+  sheets[["Calculations"]] <- calcs
   sheets[["Raw_Data_Metadata"]] <- raw_data_metadata
-
   openxlsx::write.xlsx(sheets, file_out, overwrite = overwrite)
 
   return(sheets)
@@ -712,6 +771,6 @@ c_to_f <- function(df) {
 
 mm_to_in <- function(df) {
   df <- dplyr::mutate(df, dplyr::across(dplyr::ends_with("_mm"), ~ . / 25.4))
-  names(df) <- stringr::str_replace(names(df), "(mm)|(in)", "")
+  names(df) <- stringr::str_replace(names(df), "(_mm)|(_in)", "")
   return(df)
 }

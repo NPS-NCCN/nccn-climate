@@ -4,6 +4,7 @@
 \name{reexports}
 \alias{reexports}
 \alias{connectToAquarius}
+\alias{disconnectFromAquarius}
 \title{Objects exported from other packages}
 \keyword{internal}
 \description{
@@ -11,6 +12,6 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
-  \item{fetchaquarius}{\code{\link[fetchaquarius]{connectToAquarius}}}
+  \item{fetchaquarius}{\code{\link[fetchaquarius]{connectToAquarius}}, \code{\link[fetchaquarius]{disconnectFromAquarius}}}
 }}
 
