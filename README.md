@@ -75,3 +75,24 @@ By default, the export functions will never overwrite an existing file. If you w
 ``` r
 exportNCCNDailySummaries(park_code = park, water_year = wy, overwrite = TRUE)
 ```
+
+#### View exported data in R
+
+All four export functions *invisibly return* the data that was written to the Excel file. This means that if you run the code examples above, the data won't be printed to the console. However, if you wish to examine the data in R, you can store it in a variable (see below). The export functions return a list of data frames in R where each data frame corresponds to a tab in the Excel file.
+
+``` r
+park <- "OLYM"
+wy <- 2022
+
+# Write the data to Excel, but also store it in a variable so it can be examined in R
+olym_2022 <- exportNCCNDailySummaries(park_code = park, water_year = wy)
+
+# See the names of the data frames in the list
+names(olym_2022)
+
+# Preview the top several rows of the average air temp data
+head(olym_2022$AirTemp_Average_F)
+
+# Get a basic summary of the avg air temp data (useful for QC!)
+summary(olym_2022$AirTemp_Average_F)
+```
