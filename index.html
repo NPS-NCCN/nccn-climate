@@ -113,6 +113,26 @@
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/exportNCCNDailySummaries.html">exportNCCNDailySummaries</a></span><span class="op">(</span>park_code <span class="op">=</span> <span class="va">park</span>, water_year <span class="op">=</span> <span class="va">wy</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 </div>
+<div class="section level4">
+<h4 id="view-exported-data-in-r">View exported data in R<a class="anchor" aria-label="anchor" href="#view-exported-data-in-r"></a>
+</h4>
+<p>All four export functions <em>invisibly return</em> the data that was written to the Excel file. This means that if you run the code examples above, the data won’t be printed to the console. However, if you wish to examine the data in R, you can store it in a variable (see below). The export functions return a list of data frames in R where each data frame corresponds to a tab in the Excel file.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">park</span> <span class="op">&lt;-</span> <span class="st">"OLYM"</span></span>
+<span><span class="va">wy</span> <span class="op">&lt;-</span> <span class="fl">2022</span></span>
+<span></span>
+<span><span class="co"># Write the data to Excel, but also store it in a variable so it can be examined in R</span></span>
+<span><span class="va">olym_2022</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/exportNCCNDailySummaries.html">exportNCCNDailySummaries</a></span><span class="op">(</span>park_code <span class="op">=</span> <span class="va">park</span>, water_year <span class="op">=</span> <span class="va">wy</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># See the names of the data frames in the list</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">olym_2022</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Preview the top several rows of the average air temp data</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">olym_2022</span><span class="op">$</span><span class="va">AirTemp_Average_F</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Get a basic summary of the avg air temp data (useful for QC!)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">olym_2022</span><span class="op">$</span><span class="va">AirTemp_Average_F</span><span class="op">)</span></span></code></pre></div>
+</div>
 </div>
 </div>
 </div>
