@@ -53,10 +53,10 @@
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>You can install the development version of nccnclimate from <a href="https://github.com/nationalparkservice/nccn-climate" class="external-link">its GitHub repository</a> with:</p>
+<p>You can install the development version of nccnclimate from <a href="https://github.com/NPS-NCCN/nccn-climate" class="external-link">its GitHub repository</a> with:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"nationalparkservice/nccn-climate"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"NPS-NCCN/nccn-climate"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="how-to-use">How to use<a class="anchor" aria-label="anchor" href="#how-to-use"></a>
@@ -67,7 +67,7 @@
 </h3>
 <p>Each time you use the nccnclimate package, you need to load it and then use the <code>connectToAquarius</code> function to log in to Aquarius. <em>You must be on the DOI network.</em> Be sure to put the following code at the top of any script that uses this package. If your code worked the last time you ran it but is now generating errors, it is most likely because you aren’t on the DOI network, forgot to load the nccnclimate package, and/or forgot to connect to Aquarius.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://nationalparkservice.github.io/nccn-climate/">nccnclimate</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://NPS-NCCN.github.io/nccn-climate/">nccnclimate</a></span><span class="op">)</span></span>
 <span><span class="co">## You must authenticate with Aquarius first</span></span>
 <span><span class="fu"><a href="https://wright13.github.io/imd-fetchaquarius/reference/connectToAquarius.html" class="external-link">connectToAquarius</a></span><span class="op">(</span><span class="st">"aquarius read only username here"</span>, <span class="st">"aquarius read only password here"</span><span class="op">)</span></span></code></pre></div>
 <p>It’s also good practice to put <code><a href="https://wright13.github.io/imd-fetchaquarius/reference/disconnectFromAquarius.html" class="external-link">disconnectFromAquarius()</a></code> at the end of your script.</p>
