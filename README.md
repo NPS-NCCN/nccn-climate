@@ -8,11 +8,11 @@ The goal of nccnclimate is to provide tools in R that allow users to easily retr
 
 ## Installation
 
-You can install the development version of nccnclimate from [its GitHub repository](https://github.com/nationalparkservice/nccn-climate) with:
+You can install the development version of nccnclimate from [its GitHub repository](https://github.com/NPS-NCCN/nccn-climate) with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("nationalparkservice/nccn-climate")
+devtools::install_github("NPS-NCCN/nccn-climate")
 ```
 
 ## How to use
