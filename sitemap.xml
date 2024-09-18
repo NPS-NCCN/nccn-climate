@@ -1,51 +1,19 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://nationalparkservice.github.io/nccn-climate/404.html</loc>
-  </url>
-  <url>
-    <loc>https://nationalparkservice.github.io/nccn-climate/authors.html</loc>
-  </url>
-  <url>
-    <loc>https://nationalparkservice.github.io/nccn-climate/index.html</loc>
-  </url>
-  <url>
-    <loc>https://nationalparkservice.github.io/nccn-climate/reference/exportNCCNDailyPeriodOfRecord.html</loc>
-  </url>
-  <url>
-    <loc>https://nationalparkservice.github.io/nccn-climate/reference/exportNCCNDailySummaries.html</loc>
-  </url>
-  <url>
-    <loc>https://nationalparkservice.github.io/nccn-climate/reference/exportNCCNMonthlyPeriodOfRecord.html</loc>
-  </url>
-  <url>
-    <loc>https://nationalparkservice.github.io/nccn-climate/reference/exportNCCNMonthlySummaries.html</loc>
-  </url>
-  <url>
-    <loc>https://nationalparkservice.github.io/nccn-climate/reference/getClimateParams.html</loc>
-  </url>
-  <url>
-    <loc>https://nationalparkservice.github.io/nccn-climate/reference/getClimateStationList.html</loc>
-  </url>
-  <url>
-    <loc>https://nationalparkservice.github.io/nccn-climate/reference/getClimateTimeSeriesInfo.html</loc>
-  </url>
-  <url>
-    <loc>https://nationalparkservice.github.io/nccn-climate/reference/getParkClimateData.html</loc>
-  </url>
-  <url>
-    <loc>https://nationalparkservice.github.io/nccn-climate/reference/getWaterYear.html</loc>
-  </url>
-  <url>
-    <loc>https://nationalparkservice.github.io/nccn-climate/reference/hello.html</loc>
-  </url>
-  <url>
-    <loc>https://nationalparkservice.github.io/nccn-climate/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://nationalparkservice.github.io/nccn-climate/reference/reexports.html</loc>
-  </url>
-  <url>
-    <loc>https://nationalparkservice.github.io/nccn-climate/reference/summarizeParkClimateData.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://nationalparkservice.github.io/nccn-climate/404.html</loc></url>
+<url><loc>https://nationalparkservice.github.io/nccn-climate/authors.html</loc></url>
+<url><loc>https://nationalparkservice.github.io/nccn-climate/index.html</loc></url>
+<url><loc>https://nationalparkservice.github.io/nccn-climate/reference/exportNCCNDailyPeriodOfRecord.html</loc></url>
+<url><loc>https://nationalparkservice.github.io/nccn-climate/reference/exportNCCNDailySummaries.html</loc></url>
+<url><loc>https://nationalparkservice.github.io/nccn-climate/reference/exportNCCNMonthlyPeriodOfRecord.html</loc></url>
+<url><loc>https://nationalparkservice.github.io/nccn-climate/reference/exportNCCNMonthlySummaries.html</loc></url>
+<url><loc>https://nationalparkservice.github.io/nccn-climate/reference/getClimateParams.html</loc></url>
+<url><loc>https://nationalparkservice.github.io/nccn-climate/reference/getClimateStationList.html</loc></url>
+<url><loc>https://nationalparkservice.github.io/nccn-climate/reference/getClimateTimeSeriesInfo.html</loc></url>
+<url><loc>https://nationalparkservice.github.io/nccn-climate/reference/getParkClimateData.html</loc></url>
+<url><loc>https://nationalparkservice.github.io/nccn-climate/reference/getWaterYear.html</loc></url>
+<url><loc>https://nationalparkservice.github.io/nccn-climate/reference/hello.html</loc></url>
+<url><loc>https://nationalparkservice.github.io/nccn-climate/reference/index.html</loc></url>
+<url><loc>https://nationalparkservice.github.io/nccn-climate/reference/reexports.html</loc></url>
+<url><loc>https://nationalparkservice.github.io/nccn-climate/reference/summarizeParkClimateData.html</loc></url>
 </urlset>
+
